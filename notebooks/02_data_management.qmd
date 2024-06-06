@@ -1,0 +1,132 @@
+# WeatherVista Project - Session 2: Data Management with CSV and SQL
+
+## Objectives
+- Learn how to manage weather data using CSV files.
+- Understand how to use SQL to store and retrieve weather data.
+- Practice reading, writing, and processing data with pandas and SQLite.
+
+## 1. Managing Data with CSV Files
+CSV (Comma-Separated Values) is a simple and widely used format for storing tabular data.
+
+### Import Required Libraries
+```python
+import pandas as pd
+```
+
+### Reading Data from a CSV File
+We'll read the weather data we saved in the previous session.
+
+```python
+df = pd.read_csv('data/raw/weather_data.csv')
+df
+```
+
+### Processing Data
+Let's process the data by converting the temperature from Kelvin to Celsius.
+
+```python
+def convert_temp_kelvin_to_celsius(temp_k):
+    return temp_k - 273.15
+
+df['Temperature (C)'] = df['Temperature (K)'].apply(convert_temp_kelvin_to_celsius)
+df.drop(columns=['Temperature (K)'], inplace=True)
+df
+```
+
+### Writing Data to a CSV File
+We'll save the processed data to a new CSV file.
+
+```python
+df.to_csv('data/processed/processed_weather_data.csv', index=False)
+```
+
+## 2. Managing Data with SQL
+SQL (Structured Query Language) is a powerful tool for managing and querying data stored in relational databases.
+
+### Import Required Libraries
+```python
+import sqlite3
+```
+
+### Creating a SQLite Database and Table
+We'll create a SQLite database and a table to store the weather data.
+
+```python
+conn = sqlite3.connect('data/weather_data.db')
+cursor = conn.cursor()
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS weather (
+        location TEXT,
+        temperature_c REAL,
+        humidity INTEGER,
+        weather_description TEXT
+    )
+''')
+conn.commit()
+```
+
+### Inserting Data into the Table
+We'll insert the processed weather data into the SQLite table.
+
+```python
+for index, row in df.iterrows():
+    cursor.execute('''
+        INSERT INTO weather (location, temperature_c, humidity, weather_description)
+        VALUES (?, ?, ?, ?)
+    ''', (row['Location'], row['Temperature (C)'], row['Humidity (%)'], row['Weather']))
+conn.commit()
+```
+
+### Querying Data from the Table
+We'll query the data we just inserted into the SQLite table.
+
+```python
+cursor.execute('SELECT * FROM weather')
+rows = cursor.fetchall()
+for row in rows:
+    print(row)
+```
+
+### Converting SQL Query Results to DataFrame
+We'll convert the query results to a pandas DataFrame for easier manipulation and visualization.
+
+```python
+df_sql = pd.DataFrame(rows, columns=['Location', 'Temperature (C)', 'Humidity (%)', 'Weather'])
+df_sql
+```
+
+## 3. Combining CSV and SQL Data Management
+We'll demonstrate how to combine CSV and SQL data management techniques.
+
+### Reading Data from CSV and Inserting into SQL
+We'll read additional weather data from a CSV file and insert it into the SQLite table.
+
+```python
+additional_data = pd.read_csv('data/raw/additional_weather_data.csv')
+for index, row in additional_data.iterrows():
+    cursor.execute('''
+        INSERT INTO weather (location, temperature_c, humidity, weather_description)
+        VALUES (?, ?, ?, ?)
+    ''', (row['Location'], row['Temperature (C)'], row['Humidity (%)'], row['Weather']))
+conn.commit()
+```
+
+### Querying Combined Data
+We'll query the combined data from the SQLite table.
+
+```python
+cursor.execute('SELECT * FROM weather')
+combined_rows = cursor.fetchall()
+df_combined = pd.DataFrame(combined_rows, columns=['Location', 'Temperature (C)', 'Humidity (%)', 'Weather'])
+df_combined
+```
+
+## Homework
+- Practice reading and writing data to CSV files with different weather datasets.
+- Explore additional SQL queries to retrieve specific subsets of the weather data.
+
+## Summary
+In this session, we learned how to manage weather data using CSV files and SQL. We practiced reading, writing, and processing data with pandas and SQLite, and we combined both techniques to manage our weather data effectively.
+
+Next session, we will focus on basic data visualization with Matplotlib.
