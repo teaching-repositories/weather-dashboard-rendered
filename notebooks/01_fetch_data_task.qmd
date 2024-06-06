@@ -1,0 +1,155 @@
+---
+title: "WeatherVista Project - Session 1: Fetching Data from the OpenWeatherMap API"
+execute: 
+  enabled: false
+---
+[Download Notebook](../downloads/01_fetch_data_student.ipynb)
+
+
+## Objectives
+- Learn how to fetch weather data using the OpenWeatherMap API.
+- Understand how to handle API responses and errors.
+- Save fetched data to a CSV file.
+
+## 1. Introduction to OpenWeatherMap API
+The OpenWeatherMap API provides weather data for various locations. You need to sign up and get an API key to access the data.
+
+### Steps to Get API Key
+1. Go to [OpenWeatherMap](https://home.openweathermap.org/users/sign_up) and sign up for an account.
+2. After signing up, navigate to the API keys section and generate a new API key.
+3. Keep this API key safe, as you will need it to make API requests.
+
+## 2. Fetching Weather Data
+We'll use the `requests` library to fetch weather data from the OpenWeatherMap API.
+
+### Import Required Libraries
+
+
+```{python}
+import requests
+import pandas as pd
+```
+
+### Fetch some Data
+Lets fetch some data..  Replace `'your_api_key_here'` with your actual API key and fetch data for a sample location.
+
+```{python}
+# Setup important variables
+api_key = 'your_api_key_here'
+location = 'Guangzhou'
+
+
+# Make request to website endpoint
+url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}"
+response = requests.get(url)
+
+# Print response
+response
+```
+
+What happens if the location does not exist, try a location that does not exist. Replace `'your_api_key_here'` with your actual API key and fetch data for a sample location.
+
+```{python}
+# Setup important variables
+api_key = 'your_api_key_here'
+location = 'ABCDEFGHIJK'
+
+# Make request to website endpoint
+url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}"
+response = requests.get(url)
+
+# Print response
+response
+```
+
+### Define Function to Fetch Weather Data
+We'll create a function to fetch weather data for a specific location.
+
+```{python}
+def fetch_weather_data(api_key, location):
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        print(f"Failed to fetch data: {response.status_code}")
+        return None
+```
+
+### Fetch Data for a Sample Location
+Replace `'your_api_key_here'` with your actual API key and fetch data for a sample location.
+
+```{python}
+api_key = 'your_api_key_here'
+location = 'Guangzhou'
+data = fetch_weather_data(api_key, location)
+data
+```
+
+## 3. Parsing and Displaying Data
+We'll parse the JSON response and extract relevant information.
+
+```{python}
+def parse_weather_data(data):
+    if data:
+        weather = {
+            "Location": data["name"],
+            "Temperature (K)": data["main"]["temp"],
+            "Humidity (%)": data["main"]["humidity"],
+            "Weather": data["weather"][0]["description"]
+        }
+        return weather
+    else:
+        return None
+
+parsed_data = parse_weather_data(data)
+parsed_data
+```
+
+## 4. Saving Data to a CSV File
+We'll save the fetched data to a CSV file using pandas.
+
+### Convert Data to DataFrame
+
+```{python}
+df = pd.DataFrame(parsed_data)
+df.head
+```
+
+We can now save the data to a CSV file... lets write a function to do that.
+
+```{python}
+def save_to_csv(data, filename):
+    df = pd.DataFrame([data])
+    df.to_csv(filename, index=False)
+
+save_to_csv(parsed_data, 'data/raw/weather_data.csv')
+```
+
+### Read and Display the CSV File
+
+```{python}
+df = pd.read_csv('data/raw/weather_data.csv')
+df
+```
+
+## 5. Error Handling
+It's important to handle errors that may occur during API requests. We've already added basic error handling in the `fetch_weather_data` function. Let's test it with an invalid location.
+
+### Test Error Handling
+
+```{python}
+invalid_location = 'InvalidCity'
+invalid_data = fetch_weather_data(api_key, invalid_location)
+invalid_data
+```
+
+## Homework
+- Experiment with fetching weather data for different cities.
+- Explore the OpenWeatherMap API documentation to see what other data you can fetch.
+
+## Summary
+In this session, we learned how to fetch weather data from the OpenWeatherMap API, parse the JSON response, and save the data to a CSV file. We also covered basic error handling to manage failed API requests.
+
+Next session, we will focus on managing data with CSV and SQL.
