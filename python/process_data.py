@@ -12,15 +12,15 @@ def parse_weather(entry):
     }
 
 def save_to_csv(data, filename):
-    if data is None or not data:
+    if data is None:
         print(f"No data to save for {filename}")
         return
     df = pd.DataFrame(data)
     df.to_csv(filename, index=False)
-    print(f"{filename} saved")
+    #print(f"{filename} saved")
 
 def calculate_daily_stats(forecast_data):
-    if forecast_data is None or not forecast_data:
+    if forecast_data is None:
         return None
     
     df_forecast = pd.DataFrame(forecast_data)
