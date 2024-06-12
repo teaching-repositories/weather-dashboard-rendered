@@ -3,43 +3,40 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.patches as patches
 
-
 def plot_current_weather_table(current_data, ax):
     """
-    Plot the current weather table.
+    Plot a table displaying the current weather data.
 
     Parameters:
-    current_data (DataFrame): The current weather data.
-    ax (Axes): The matplotlib axes on which to plot.
+    - current_data (DataFrame): DataFrame containing current weather data.
+    - ax (matplotlib.axes.Axes): Axes object to draw the table on.
     """
     ax.axis('off')
     ax.table(cellText=current_data.values, colLabels=current_data.columns, cellLoc='center', loc='center')
     ax.set_title('Current Weather Data')
-
 
 def plot_weather_pie_chart(hourly_data, ax):
     """
     Plot a pie chart showing the proportion of different weather descriptions.
 
     Parameters:
-    hourly_data (DataFrame): The hourly weather data.
-    ax (Axes): The matplotlib axes on which to plot.
+    - hourly_data (DataFrame): DataFrame containing hourly weather data with a 'Weather' column.
+    - ax (matplotlib.axes.Axes): Axes object to draw the pie chart on.
     """
     weather_counts = hourly_data['Weather'].value_counts()
     ax.pie(weather_counts, labels=weather_counts.index, autopct='%1.1f%%', startangle=140, colors=plt.cm.tab20.colors)
     ax.set_title('Proportion of Weather Descriptions')
 
-
 def plot_trend(data, time_column, value_column, ax, title="Trend"):
     """
-    Plot the trend of a specific value over time.
+    Plot a trend line of a specified value over time.
 
     Parameters:
-    data (DataFrame): The data containing the time and value columns.
-    time_column (str): The name of the time column.
-    value_column (str): The name of the value column.
-    ax (Axes): The matplotlib axes on which to plot.
-    title (str): The title of the plot.
+    - data (DataFrame): DataFrame containing the data.
+    - time_column (str): Name of the column containing time data.
+    - value_column (str): Name of the column containing the values to plot.
+    - ax (matplotlib.axes.Axes): Axes object to draw the plot on.
+    - title (str): Title of the plot.
     """
     ax.plot(data[time_column], data[value_column], marker='o', linestyle='-', linewidth=1, color='tab:blue', label=value_column)
     z = np.polyfit(data.index, data[value_column], 1)
@@ -51,17 +48,16 @@ def plot_trend(data, time_column, value_column, ax, title="Trend"):
     ax.legend()
     ax.grid(True)
 
-
 def plot_scatter(data, x_column, y_column, ax, title="Scatter Plot"):
     """
-    Plot a scatter plot of two variables.
+    Plot a scatter plot with a best fit line.
 
     Parameters:
-    data (DataFrame): The data containing the x and y columns.
-    x_column (str): The name of the x column.
-    y_column (str): The name of the y column.
-    ax (Axes): The matplotlib axes on which to plot.
-    title (str): The title of the plot.
+    - data (DataFrame): DataFrame containing the data.
+    - x_column (str): Name of the column for the x-axis values.
+    - y_column (str): Name of the column for the y-axis values.
+    - ax (matplotlib.axes.Axes): Axes object to draw the scatter plot on.
+    - title (str): Title of the plot.
     """
     ax.scatter(data[x_column], data[y_column], color='blue', alpha=0.6, edgecolors='w', linewidth=0.5, label='Data Points')
     z = np.polyfit(data[x_column], data[y_column], 1)
@@ -73,47 +69,57 @@ def plot_scatter(data, x_column, y_column, ax, title="Scatter Plot"):
     ax.legend()
     ax.grid(True)
 
-
 def plot_min_max(data, date_column, min_column, max_column, ax, title="Min/Max Plot"):
     """
-    Plot the minimum and maximum values over time.
+    Plot the minimum and maximum values over time with trendlines.
 
     Parameters:
-    data (DataFrame): The data containing the date, min, and max columns.
-    date_column (str): The name of the date column.
-    min_column (str): The name of the minimum value column.
-    max_column (str): The name of the maximum value column.
-    ax (Axes): The matplotlib axes on which to plot.
-    title (str): The title of the plot.
+    - data (DataFrame): DataFrame containing the data.
+    - date_column (str): Name of the column containing date data.
+    - min_column (str): Name of the column containing minimum values.
+    - max_column (str): Name of the column containing maximum values.
+    - ax (matplotlib.axes.Axes): Axes object to draw the plot on.
+    - title (str): Title of the plot.
     """
-    ax.bar(data[date_column], data[min_column], width=0.4, label=f'Min {min_column}', color='tab:blue', align='center')
-    ax.bar(data[date_column] + pd.Timedelta(days=0.4), data[max_column], width=0.4, label=f'Max {max_column}', color='tab:red', align='center')
+    width = 0.3  # Width of the bars
+    dates = pd.to_datetime(data[date_column])
+    
+    # Plot min values
+    ax.bar(dates - pd.Timedelta(days=width/2), data[min_column], width=width, label=f'Min {min_column}', color='tab:blue', align='center')
+    
+    # Plot max values
+    ax.bar(dates + pd.Timedelta(days=width/2), data[max_column], width=width, label=f'Max {max_column}', color='tab:red', align='center')
+
+    # Calculate trendlines
     z_min = np.polyfit(data.index, data[min_column], 1)
     p_min = np.poly1d(z_min)
     z_max = np.polyfit(data.index, data[max_column], 1)
     p_max = np.poly1d(z_max)
-    ax.plot(data[date_column], p_min(data.index), "b--", label=f'Min {min_column} Trendline')
-    ax.plot(data[date_column] + pd.Timedelta(days=0.4), p_max(data.index), "r--", label=f'Max {max_column} Trendline')
+
+    # Plot trendlines
+    ax.plot(dates, p_min(data.index), "b--", label=f'Min {min_column} Trendline')
+    ax.plot(dates, p_max(data.index), "r--", label=f'Max {max_column} Trendline')
+
+    # Set labels and title
     ax.set_xlabel(date_column)
     ax.set_ylabel('Value')
     ax.set_title(title)
     ax.legend()
     ax.grid(True)
 
-
 def plot_histogram(data, column, ax, title="Histogram", xlabel=None, ylabel="Frequency", bins=20, color='tab:blue'):
     """
-    Plot a histogram of a specific column.
+    Plot a histogram of a specified column.
 
     Parameters:
-    data (DataFrame): The data containing the column to plot.
-    column (str): The name of the column to plot.
-    ax (Axes): The matplotlib axes on which to plot.
-    title (str): The title of the plot.
-    xlabel (str): The label for the x-axis.
-    ylabel (str): The label for the y-axis.
-    bins (int): The number of bins in the histogram.
-    color (str): The color of the histogram bars.
+    - data (DataFrame): DataFrame containing the data.
+    - column (str): Name of the column to plot.
+    - ax (matplotlib.axes.Axes): Axes object to draw the histogram on.
+    - title (str): Title of the plot.
+    - xlabel (str): Label for the x-axis.
+    - ylabel (str): Label for the y-axis.
+    - bins (int): Number of bins in the histogram.
+    - color (str): Color of the histogram.
     """
     ax.hist(data[column], bins=bins, color=color, alpha=0.7)
     ax.set_title(title)
@@ -121,46 +127,43 @@ def plot_histogram(data, column, ax, title="Histogram", xlabel=None, ylabel="Fre
     ax.set_ylabel(ylabel)
     ax.grid(True)
 
-
 def plot_box_plot(data, column, ax, title="Box Plot"):
     """
-    Plot a box plot of a specific column.
+    Plot a box plot of a specified column.
 
     Parameters:
-    data (DataFrame): The data containing the column to plot.
-    column (str): The name of the column to plot.
-    ax (Axes): The matplotlib axes on which to plot.
-    title (str): The title of the plot.
+    - data (DataFrame): DataFrame containing the data.
+    - column (str): Name of the column to plot.
+    - ax (matplotlib.axes.Axes): Axes object to draw the box plot on.
+    - title (str): Title of the plot.
     """
     ax.boxplot(data[column])
     ax.set_title(title)
     ax.set_ylabel(column)
     ax.grid(True)
 
-
 def plot_box_plots(data, columns, ax, title="Box Plot"):
     """
-    Plot multiple box plots for specified columns.
+    Plot box plots for multiple columns.
 
     Parameters:
-    data (DataFrame): The data containing the columns to plot.
-    columns (list of str): The names of the columns to plot.
-    ax (Axes): The matplotlib axes on which to plot.
-    title (str): The title of the plot.
+    - data (DataFrame): DataFrame containing the data.
+    - columns (list): List of column names to plot.
+    - ax (matplotlib.axes.Axes): Axes object to draw the box plots on.
+    - title (str): Title of the plot.
     """
     ax.boxplot([data[column] for column in columns], labels=columns)
     ax.set_title(title)
     ax.grid(True)
-
 
 def plot_correlation_heatmap(data, columns, ax):
     """
     Plot a correlation heatmap for specified columns.
 
     Parameters:
-    data (DataFrame): The data containing the columns to plot.
-    columns (list of str): The names of the columns to include in the correlation heatmap.
-    ax (Axes): The matplotlib axes on which to plot.
+    - data (DataFrame): DataFrame containing the data.
+    - columns (list): List of column names to include in the correlation matrix.
+    - ax (matplotlib.axes.Axes): Axes object to draw the heatmap on.
     """
     correlation_matrix = data[columns].corr()
     cax = ax.matshow(correlation_matrix, cmap='coolwarm')
@@ -176,19 +179,17 @@ def plot_correlation_heatmap(data, columns, ax):
             ax.text(j, i, f'{correlation_matrix.iloc[i, j]:.2f}', ha='center', va='center', color='white')
     ax.set_title('Correlation Matrix Heatmap')
 
-
 def create_forecast_card(ax, date, high_temp, low_temp, weather):
     """
-    Create a forecast card displaying weather information.
+    Create a forecast card with weather information.
 
     Parameters:
-    ax (Axes): The matplotlib axes on which to plot.
-    date (datetime): The date of the forecast.
-    high_temp (float): The high temperature for the day.
-    low_temp (float): The low temperature for the day.
-    weather (str): The weather condition (e.g., 'Sunny', 'Rainy', 'Partly Cloudy').
+    - ax (matplotlib.axes.Axes): Axes object to draw the forecast card on.
+    - date (datetime): Date of the forecast.
+    - high_temp (float): High temperature value.
+    - low_temp (float): Low temperature value.
+    - weather (str): Weather condition (e.g., 'Sunny', 'Partly Cloudy', 'Rainy').
     """
-    # Background color based on weather
     if weather == 'Sunny':
         bg_color = 'gold'
     elif weather == 'Partly Cloudy':
@@ -197,7 +198,7 @@ def create_forecast_card(ax, date, high_temp, low_temp, weather):
         bg_color = 'lightblue'
     else:
         bg_color = 'white'
-
+    
     # Create a rectangle patch for the background color
     rect = patches.Rectangle((0, 0), 1, 1, transform=ax.transAxes, color=bg_color, zorder=0)
     ax.add_patch(rect)
@@ -206,9 +207,13 @@ def create_forecast_card(ax, date, high_temp, low_temp, weather):
 
     # Display date
     ax.text(0.5, 0.8, date.strftime('%Y-%m-%d'), fontsize=12, ha='center', va='center')
+    
     # Display high temperature
-    ax.text(0.5, 0.6, f'High: {high_temp}°C', fontsize=10, ha='center', va='center', color='red')
+    ax.text(0.5, 0.6, f'High: {high_temp:.2f}°C', fontsize=10, ha='center', va='center', color='red')
+    
     # Display low temperature
-    ax.text(0.5, 0.4, f'Low: {low_temp}°C', fontsize=10, ha='center', va='center', color='blue')
+    ax.text(0.5, 0.4, f'Low: {low_temp:.2f}°C', fontsize=10, ha='center', va='center', color='blue')
+    
     # Display weather condition
     ax.text(0.5, 0.2, weather, fontsize=10, ha='center', va='center')
+
